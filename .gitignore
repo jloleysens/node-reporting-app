@@ -43,5 +43,8 @@ jspm_packages
 # Output of 'npm pack'
 *.tgz
 
+# ignore the config
+config.json
+
 # Yarn Integrity file
 .yarn-integrity

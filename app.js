@@ -6,6 +6,7 @@ Created on: Tue Jan 17 15:46:03 SAST 2017
 */
 
 var fetch = require('node-fetch');
+var csv = require('csv');
 var async = require('asyncawait/async');
 var await = require('asyncawait/await');
 var Promise = require('bluebird');
@@ -29,7 +30,6 @@ getopt = new Getopt([
 ]);
 
 opt = getopt.parse(process.argv.slice(2));
-
 
 var monthNames = [
     "January",
