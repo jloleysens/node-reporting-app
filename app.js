@@ -14,7 +14,7 @@ Getopt = require('node-getopt');
 var basic_auth_header = function(u, p) {
     return {
         Authorization: "Basic " + basicHash(u, p)
-    }
+    };
 };
 
 
@@ -38,7 +38,7 @@ function init(){
                 console.log(resp[0] + ' jobs found...');
                 batchifyDataRequests(resp[0], resp[1]);
             })
-            .catch(function(err){ throw new Error(err.message) });
+            .catch(function(err){ throw new Error(err.message); });
     }
 }
 
