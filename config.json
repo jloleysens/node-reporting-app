@@ -1,0 +1,15 @@
+{
+    "app_backends": [
+        {
+            "base_url": "https://run.journeyapps.com/api/v1",
+            "name": "G4S ATM Engineering",
+            "password": "9QtRDv5uxnOLhu1vsZJF",
+            "username": "52d66dea1ea10fdefd0017c5"
+        },
+        {
+            "name": "G4S Deposita Engineering",
+            "password": null,
+            "username": null
+        }
+    ]
+}

@@ -1,0 +1,17 @@
+{
+  "name": "g4s-reporting-app",
+  "version": "1.0.0",
+  "description": "App for doing stuff with CSVs",
+  "main": "app.js",
+  "dependencies": {
+    "asyncawait": "^1.0.6",
+    "node-fetch": "^1.6.3",
+    "node-getopt": "^0.2.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jean-Louis Leysens",
+  "license": "ISC"
+}
