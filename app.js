@@ -21,10 +21,10 @@ var basic_auth_header = function(u, p) {
 
 getopt = new Getopt([
     ['o', 'output=ARG', 'The path to which to output files. Defaults to \'./\'.'],
-    ['atms', 'atmstart=ARG', 'The start date of the ATM jobs'],
-    ['atme', 'atmend=ARG', 'The end date of the ATM jobs'],
-    ['abms', 'abmstart=ARG', 'The start date of the ABM jobs'],
-    ['abme', 'abmend=ARG', 'The end date of the ABM jobs'],
+    ['atms', 'atmstart=ARG', 'The start date (YYYY-MM-DD) of the ATM jobs'],
+    ['atme', 'atmend=ARG', 'The end date (YYYY-MM-DD) of the ATM jobs'],
+    ['abms', 'abmstart=ARG', 'The start (YYYY-MM-DD) date of the ABM jobs'],
+    ['abme', 'abmend=ARG', 'The end date (YYYY-MM-DD) of the ABM jobs'],
     ['h', 'help', 'Display this help message']
 ]);
 
@@ -58,10 +58,9 @@ function init(){
     batchifyDataRequests();
 }
 
-function batchifyDataRequests(){
-    if(typeof skip === 'undefined') skip_abm = 0;
-    if(typeof skip === 'undefined') skip_atm = 0;
-    var atm_done = false;
+function batchifyDataRequests(job_name, skip, done){
+    if(typeof skip === 'undefined') skip = 0;
+    if(typeof done === 'undefined') done = false;
     for(var i = 0; i < config.max_batch; i++){
     }
     fetchData(count, backend, skip)
@@ -86,21 +85,6 @@ var fetchData = async (function (count, backend, skip){
         });
     return [await(data), count, backend, skip];
 });
-
-// var fetchCount = async (function (backend){
-//     var url = backend.base_url + "/job/count.json";
-//     var options = { headers: basic_auth_header(backend.username, backend.password), method: 'get' };
-//
-//     var count = fetch(url, options)
-//         .then( function (response){
-//             if(response) return response.json();
-//             else throw new Error("No response object.");
-//         })
-//         .then( function(json){
-//             return json.count;
-//         });
-//     return [await (count), backend];
-// });
 
 function basicHash(uname, pword){
     return new Buffer(uname + ":" + pword).toString('base64');
