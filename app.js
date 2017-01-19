@@ -22,10 +22,10 @@ var basic_auth_header = function(u, p) {
 
 getopt = new Getopt([
     ['o', 'output=ARG', 'The path to which to output files. Defaults to \'./\'.'],
-    ['atms', 'atmstart=ARG', 'The start date (YYYY-MM-DD) of the ATM jobs'],
-    ['atme', 'atmend=ARG', 'The end date (YYYY-MM-DD) of the ATM jobs'],
-    ['abms', 'abmstart=ARG', 'The start (YYYY-MM-DD) date of the ABM jobs'],
-    ['abme', 'abmend=ARG', 'The end date (YYYY-MM-DD) of the ABM jobs'],
+    ['a', 'atmstart=ARG', 'The start date (YYYY-MM-DD) of the ATM jobs'],
+    ['b', 'atmend=ARG', 'The end date (YYYY-MM-DD) of the ATM jobs'],
+    ['c', 'abmstart=ARG', 'The start (YYYY-MM-DD) date of the ABM jobs'],
+    ['d', 'abmend=ARG', 'The end date (YYYY-MM-DD) of the ABM jobs'],
     ['h', 'help', 'Display this help message']
 ]);
 
@@ -57,12 +57,12 @@ function init(){
     console.log('Starting fetch requests...');
     batchifyDataRequests();
 }
-
-function batchifyDataRequests(job_name, skip, done){
+/*
+ * The below function should return a promise
+ */
+function batchifyDataRequests(job_name, start_date, end_date, skip, done){
     if(typeof skip === 'undefined') skip = 0;
     if(typeof done === 'undefined') done = false;
-    for(var i = 0; i < config.max_batch; i++){
-    }
     fetchData(count, backend, skip)
         .then(function (data){ console.log("Data fetched."); })
         .catch(function(err){ console.log(err.message); });

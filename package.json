@@ -5,6 +5,7 @@
   "main": "app.js",
   "dependencies": {
     "asyncawait": "^1.0.6",
+    "csv": "^1.1.0",
     "node-fetch": "^1.6.3",
     "node-getopt": "^0.2.3"
   },
