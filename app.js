@@ -17,17 +17,12 @@ Date.prototype.yyyymmdd = function() {
 };
 
 var fetch = require('node-fetch');
-var csv = require('csv');
+var fs = require('fs');
+var csvWriter = require('csv-write-stream');
 var async = require('async');
 var Promise = require('bluebird');
 Getopt = require('node-getopt');
 var config = require('./config.json');
-
-var basic_auth_header = function(u, p) {
-    return {
-        Authorization: "Basic " + basicHash(u, p)
-    };
-};
 
 getopt = new Getopt([
     ['o', 'output=ARG', 'The path to which to output files. Defaults to \'./\'.'],
@@ -100,33 +95,65 @@ function makeRequests(job_type, date_arr){
     async.each(date_arr,
         function(date, callback){
             promise_arr.push(
-                fetchData(date, opt.options.enddate, job_type)
+                fetchData(date, job_type)
             );
         });
-    Promise.all(promise_arr).then(function(vals) {console.log(vals);});
+    Promise.all(promise_arr).then(function(responses) { 
+        console.log("Fetched all data.");
+        writeToCSV(responses);
+    });
 }
 
-function writeToCSV(file_path) {
+function writeToCSV(data) {
+    console.log("Writing to file...");
+    var writer = csvWriter({
+        headers: ["date", "count"]
+    });
+    var path = opt.options.output || "./output" + new Date().valueOf() + ".csv";
+    writer.pipe(
+        fs.createWriteStream(
+            path,
+            { flags: 'a+' }
+        )
+    );
+    data.forEach(function (datum){
+        writer.write([
+            datum.date,
+            datum.count
+        ]);
+    });
+    writer.end();
+    console.log("Data points written to file.");
+    console.log("Script completed.");
 }
 
-function fetchData(start_date, end_date, job_type) {
+function fetchData(start_date, job_type) {
+    var end_of_month = new Date(start_date);
+    end_of_month = new Date(
+        end_of_month.getFullYear(),
+        end_of_month.getMonth() + 1,
+        end_of_month.getDate()
+    );
     var url = config.app_backend.base_url +
         "/job/count.json?query[created_at.gte]=" + start_date +
-        "&query[created_at.lt]=" + end_date + "-01" +
+        "&query[created_at.lt]=" + end_of_month.yyyymmdd() +
         "&query[asset_type]=" + job_type;
-    var options = { headers: basic_auth_header(config.app_backend.username, config.app_backend.password), method: 'get' };
+    var options = { headers: basicHash(config.app_backend.username, config.app_backend.password), method: 'get' };
     return fetch(url, options)
         .then(function (response){
             if(response) return response.json(); // Parse the Json
             else throw new Error("No response object.");
         })
         .then(function (json){
+            json.date = start_date;
             return json;
         });
 }
 
 function basicHash(uname, pword){
-    return new Buffer(uname + ":" + pword).toString('base64');
+    return {
+        Authorization: 'Basic ' + new Buffer(uname + ":" + pword).toString('base64')
+    };
 }
 
 init();

@@ -5,8 +5,8 @@
   "main": "app.js",
   "dependencies": {
     "async": "^2.1.4",
-    "asyncawait": "^1.0.6",
-    "csv": "^1.1.0",
+    "bluebird": "^3.4.7",
+    "csv-write-stream": "^2.0.0",
     "node-fetch": "^1.6.3",
     "node-getopt": "^0.2.3"
   },
