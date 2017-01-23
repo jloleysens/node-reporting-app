@@ -4,6 +4,7 @@
   "description": "App for doing stuff with CSVs",
   "main": "app.js",
   "dependencies": {
+    "async": "^2.1.4",
     "asyncawait": "^1.0.6",
     "csv": "^1.1.0",
     "node-fetch": "^1.6.3",

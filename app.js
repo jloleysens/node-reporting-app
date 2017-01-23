@@ -5,10 +5,20 @@ Email: jeanlouis@journeyapps.com
 Created on: Tue Jan 17 15:46:03 SAST 2017
 */
 
+
+Date.prototype.yyyymmdd = function() {
+  var mm = this.getMonth() + 1; // getMonth() is zero-based
+  var dd = this.getDate();
+
+  return [this.getFullYear(),
+          (mm>9 ? '' : '0') + mm,
+          (dd>9 ? '' : '0') + dd
+         ].join('-');
+};
+
 var fetch = require('node-fetch');
 var csv = require('csv');
-var async = require('asyncawait/async');
-var await = require('asyncawait/await');
+var async = require('async');
 var Promise = require('bluebird');
 Getopt = require('node-getopt');
 var config = require('./config.json');
@@ -19,13 +29,11 @@ var basic_auth_header = function(u, p) {
     };
 };
 
-
 getopt = new Getopt([
     ['o', 'output=ARG', 'The path to which to output files. Defaults to \'./\'.'],
-    ['a', 'atmstart=ARG', 'The start date (YYYY-MM-DD) of the ATM jobs'],
-    ['b', 'atmend=ARG', 'The end date (YYYY-MM-DD) of the ATM jobs'],
-    ['c', 'abmstart=ARG', 'The start (YYYY-MM-DD) date of the ABM jobs'],
-    ['d', 'abmend=ARG', 'The end date (YYYY-MM-DD) of the ABM jobs'],
+    ['s', 'startdate=ARG', 'The end date (YYYY-MM) of the ATM jobs'],
+    ['e', 'enddate=ARG', 'The start date (YYYY-MM) of the ATM jobs'],
+    ['j', 'jobtype=ARG', 'Either ATM or ABM'],
     ['h', 'help', 'Display this help message']
 ]);
 
@@ -46,36 +54,68 @@ var monthNames = [
     "December"
 ];
 
-var job_name = [
+var jobs = [
     "ABM",
     "ATM"
 ];
 
 function init(){
     if(opt.options.help) return getopt.showHelp();
+    if(
+        opt.options.startdate   &&
+        opt.options.enddate     &&
+        opt.options.jobtype
+    ){
+        if(new Date(opt.options.startdate) < new Date(opt.options.enddate)){
+            var results = {};
+            var dates = getArrayOfDates(
+                new Date(opt.options.startdate),
+                new Date(opt.options.enddate)
+            );
+            console.log('Starting fetch requests...');
+            return makeRequests( jobs.indexOf(opt.options.jobtype), dates );
 
-    console.log('Starting fetch requests...');
-    batchifyDataRequests();
+        } else console.log("Start date must be before end date.");
+
+    } else{
+        console.log("Please provide all of the required arguments.");
+    }
 }
-/*
- * The below function should return a promise
- */
-function batchifyDataRequests(job_name, start_date, end_date, skip, done){
-    if(typeof skip === 'undefined') skip = 0;
-    if(typeof done === 'undefined') done = false;
-    fetchData(count, backend, skip)
-        .then(function (data){ console.log("Data fetched."); })
-        .catch(function(err){ console.log(err.message); });
+
+function getArrayOfDates(start_date, end_date, date_array){
+    if(typeof date_array === 'undefined') date_array = [];
+    if(start_date < end_date){
+        date_array.push(start_date.yyyymmdd());
+        return getArrayOfDates(
+            new Date( start_date.getFullYear(), start_date.getMonth() + 1, start_date.getDate(), 2 ),
+            end_date,
+            date_array
+        );
+    } else return date_array;
 }
 
-function writeToCSV(file_name) {
+function makeRequests(job_type, date_arr){
+    var promise_arr = [];
+    console.log("Fetching Data...");
+    async.each(date_arr,
+        function(date, callback){
+            promise_arr.push(
+                fetchData(date, opt.options.enddate, job_type)
+            );
+        });
+    Promise.all(promise_arr).then(function(vals) {console.log(vals);});
 }
 
-var fetchData = async (function (count, backend, skip){
-    var url = backend.base_url + "/job.json?limit=" + config.max_request +"&skip=" + skip;
-    var options = { headers: basic_auth_header(backend.username, backend.password), method: 'get' };
+function writeToCSV(file_path) {
+}
 
-    var data = fetch(url, options)
+function fetchData(start_date, end_date, job_type) {
+    var url = config.app_backend.base_url +
+        "/job/count.json?query[created_at.gte]=" + start_date +
+        "&query[created_at.lt]=" + end_date + "-01" +
+        "&query[asset_type]=" + job_type;
+    var options = { headers: basic_auth_header(config.app_backend.username, config.app_backend.password), method: 'get' };
+    return fetch(url, options)
         .then(function (response){
             if(response) return response.json(); // Parse the Json
             else throw new Error("No response object.");
@@ -83,8 +123,7 @@ var fetchData = async (function (count, backend, skip){
         .then(function (json){
             return json;
         });
-    return [await(data), count, backend, skip];
-});
+}
 
 function basicHash(uname, pword){
     return new Buffer(uname + ":" + pword).toString('base64');
