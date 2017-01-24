@@ -109,7 +109,7 @@ function writeToCSV(data) {
     var writer = csvWriter({
         headers: ["date", "count"]
     });
-    var path = opt.options.output || "./output" + new Date().valueOf() + ".csv";
+    var path = opt.options.output || "./output_" + opt.options.jobtype + "_" + new Date().valueOf() + ".csv";
     writer.pipe(
         fs.createWriteStream(
             path,
