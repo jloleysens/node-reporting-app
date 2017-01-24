@@ -34,21 +34,6 @@ getopt = new Getopt([
 
 opt = getopt.parse(process.argv.slice(2));
 
-var monthNames = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December"
-];
-
 var jobs = [
     "ABM",
     "ATM"
@@ -62,7 +47,6 @@ function init(){
         opt.options.jobtype
     ){
         if(new Date(opt.options.startdate) < new Date(opt.options.enddate)){
-            var results = {};
             var dates = getArrayOfDates(
                 new Date(opt.options.startdate),
                 new Date(opt.options.enddate)
@@ -78,7 +62,9 @@ function init(){
 }
 
 function getArrayOfDates(start_date, end_date, date_array){
+
     if(typeof date_array === 'undefined') date_array = [];
+
     if(start_date < end_date){
         date_array.push(start_date.yyyymmdd());
         return getArrayOfDates(
@@ -91,37 +77,38 @@ function getArrayOfDates(start_date, end_date, date_array){
 
 function makeRequests(job_type, date_arr){
     var promise_arr = [];
+
     console.log("Fetching Data...");
-    async.each(date_arr,
-        function(date, callback){
-            promise_arr.push(
-                fetchData(date, job_type)
-            );
+
+    // Async async-ness!
+    async.each(date_arr, function(date){
+            promise_arr.push(fetchData(date, job_type));
         });
-    Promise.all(promise_arr).then(function(responses) { 
-        console.log("Fetched all data.");
-        writeToCSV(responses);
+
+    // Wait for all fetches to finish
+    Promise.all(promise_arr)
+        .then(function(responses) {
+            console.log("Fetched all data.");
+            writeToCSV(responses);
     });
 }
 
 function writeToCSV(data) {
     console.log("Writing to file...");
-    var writer = csvWriter({
-        headers: ["date", "count"]
-    });
+
+    var writer = csvWriter({ headers: ["date", "count"] });
+
     var path = opt.options.output || "./output_" + opt.options.jobtype + "_" + new Date().valueOf() + ".csv";
+
     writer.pipe(
-        fs.createWriteStream(
-            path,
-            { flags: 'a+' }
-        )
-    );
+        fs.createWriteStream( path, { flags: 'a+' }));
+
     data.forEach(function (datum){
-        writer.write([
-            datum.date,
-            datum.count
-        ]);
+        console.log("here");
+        writer.write([ datum.date, datum.count ]);
     });
+
+    // Close the write stream and sign off
     writer.end();
     console.log("Data points written to file.");
     console.log("Script completed.");
