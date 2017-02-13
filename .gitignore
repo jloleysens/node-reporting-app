@@ -50,3 +50,5 @@ config.json
 .yarn-integrity
 *.csv
 .tern-port
+
+.vscode
